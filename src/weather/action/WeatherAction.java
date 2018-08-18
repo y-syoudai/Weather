@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import weather.bean.ForecastBean;
 import weather.bean.WeatherBean;
+import weather.dao.DaoManager;
 import weather.dao.ForecastDao;
 import weather.dao.WeatherDao;
 import weather.data.City;
@@ -52,20 +53,19 @@ public class WeatherAction {
 	private WeatherBean getJsonData() {
 		WeatherBean weatherBean = new WeatherBean();
 		WeatherInfo weatherInfo = new WeatherInfo();
-		WeatherManager weatherManager = WeatherManager.getInstance();
 		weatherBean = weatherInfo.getWeatherInfo(this.weatherBean.getCityId());
 		Connection connection = null;
 		try {
-			connection = weatherManager.getConnection();
+			connection = DaoManager.getInstance().getConnection();
 			WeatherDao weatherDao = new WeatherDao(connection);
-			weatherDao.deleteCity(weatherBean.getCityId());
-			weatherDao.insertCity(weatherBean);
+			weatherDao.delete(weatherBean.getCityId());
+			weatherDao.insert(weatherBean);
 			ForecastDao forecastDao = new ForecastDao(connection);
-			forecastDao.deleteCity(weatherBean.getCityId());
-			for(ForecastBean forecastBean : weatherBean.getForecasts()) {
-				forecastDao.insertCity(forecastBean);
+			forecastDao.delete(weatherBean.getCityId());
+			for (ForecastBean forecastBean : weatherBean.getForecasts()) {
+				forecastDao.insert(forecastBean);
 			}
-			weatherManager.setWeatherDBManager(weatherBean);
+			WeatherManager.getInstance().setWeatherDBManager(weatherBean);
 		} catch (SQLException e) {
 			logger.error("SQLエラー", e);
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -87,11 +87,11 @@ public class WeatherAction {
 		WeatherBean weatherBean = new WeatherBean();
 		Connection connection = null;
 		try {
-			connection = WeatherManager.getInstance().getConnection();
+			connection = DaoManager.getInstance().getConnection();
 			WeatherDao weatherDao = new WeatherDao(connection);
-			weatherBean = weatherDao.selectCity(this.weatherBean.getCityId());
+			weatherBean = weatherDao.selectByCityId(this.weatherBean.getCityId());
 			ForecastDao forecastDao = new ForecastDao(connection);
-			weatherBean.setForecasts(forecastDao.selectCity(this.weatherBean.getCityId()));
+			weatherBean.setForecasts(forecastDao.selectByCityId(this.weatherBean.getCityId()));
 		} catch (SQLException e) {
 			logger.error("SQLエラー", e);
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -106,7 +106,7 @@ public class WeatherAction {
 			}
 		}
 		weatherBean.setDebugData("DBから取得");
-		if(weatherBean.getCityId() == null || weatherBean.getForecasts().isEmpty()) {
+		if (weatherBean.getCityId() == null || weatherBean.getForecasts().isEmpty()) {
 			weatherBean = this.getJsonData();
 		}
 		return weatherBean;
