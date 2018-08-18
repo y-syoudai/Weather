@@ -12,8 +12,8 @@ import weather.bean.ForecastBean;
 public class ForecastDao {
 	private Connection connection;
 
-	private static final String SQL_SELECT_CITY = "select * from forecast where cityId = ? order by dateText";
-	private static final String SQL_DELETE_CITY = "delete from forecast where cityId = ?";
+	private static final String SQL_SELECT_CITY_ID = "select * from forecast where cityId = ? order by dateText";
+	private static final String SQL_DELETE = "delete from forecast where cityId = ?";
 	private static final String SQL_INSERT = "insert into forecast values(?, ?, ?, ?, ?, ?, ?)";
 	private static final String COLUMN_CITY_ID = "cityId";
 	private static final String COLUMN_DATE_LABEL = "dateLabel";
@@ -27,8 +27,8 @@ public class ForecastDao {
 		this.connection = connection;
 	}
 
-	public List<ForecastBean> selectCity(String cityId) throws SQLException {
-		PreparedStatement ps = this.connection.prepareStatement(SQL_SELECT_CITY);
+	public List<ForecastBean> selectByCityId(String cityId) throws SQLException {
+		PreparedStatement ps = this.connection.prepareStatement(SQL_SELECT_CITY_ID);
 		ps.setString(1, cityId);
 		ResultSet rs = ps.executeQuery();
 		List<ForecastBean> list = new ArrayList<ForecastBean>();
@@ -48,15 +48,15 @@ public class ForecastDao {
 		return list;
 	}
 
-	public int deleteCity(String cityId) throws SQLException {
-		PreparedStatement ps = this.connection.prepareStatement(SQL_DELETE_CITY);
+	public int delete(String cityId) throws SQLException {
+		PreparedStatement ps = this.connection.prepareStatement(SQL_DELETE);
 		ps.setString(1, cityId);
 		int result = ps.executeUpdate();
 		ps.close();
 		return result;
 	}
 
-	public int insertCity(ForecastBean forecastBean) throws SQLException {
+	public int insert(ForecastBean forecastBean) throws SQLException {
 		PreparedStatement ps = this.connection.prepareStatement(SQL_INSERT);
 		ps.setString(1, forecastBean.getCityId());
 		ps.setString(2, forecastBean.getDateLabel());
